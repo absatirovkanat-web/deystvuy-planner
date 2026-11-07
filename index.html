@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png" type="image/png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ДЕЙСТВУЙ! — 30 дней</title>
+<style>
+:root{--bg:#101010;--panel:#1b1b1b;--panel2:#242424;--text:#f4f4f4;--muted:#aaa;--line:#383838;--accent:#d6b56d;--input:#141414}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+body[data-theme="gray"]{--bg:#343638;--panel:#414447;--panel2:#4b4f52;--text:#f5f5f5;--muted:#d0d0d0;--line:#62676b;--accent:#e2c58a;--input:#36393b}
+body[data-theme="sepia"]{--bg:#e8dcc4;--panel:#f4ead7;--panel2:#eaddc5;--text:#382b1d;--muted:#76634d;--line:#cbb99b;--accent:#8a5a2b;--input:#fff8eb}
+header{padding:18px 16px 12px;position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--line)}
+h1{font-size:23px;letter-spacing:.8px;margin:0} .sub{color:var(--muted);font-size:12px;margin-top:3px}
+main{padding:14px;max-width:760px;margin:auto}.themes{display:flex;gap:8px;margin:12px 0}
+button,select{font:inherit}button{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer}
+.theme-btn{flex:1;font-size:13px}.theme-btn.active{border:2px solid var(--accent);font-weight:700}
+nav{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}nav button{white-space:nowrap;font-size:13px}
+nav button.active{background:var(--accent);color:#17130d;border-color:var(--accent);font-weight:700}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px;margin:10px 0}
+h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:16px 0 7px}
+label{display:block;color:var(--muted);font-size:13px;margin:10px 0 5px}
+input,textarea,select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--input);color:var(--text);font:inherit}
+textarea{min-height:76px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.primary{background:var(--accent);color:#17130d;border-color:var(--accent);font-weight:700}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row button{flex:1}
+.daylist{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.daylist button{padding:9px 4px}
+.small{font-size:12px;color:var(--muted)}.money{font-size:25px;font-weight:750;color:var(--accent)}
+.entry{padding:9px 0;border-bottom:1px solid var(--line)}.entry:last-child{border:0}
+.hidden{display:none!important}.danger{border-color:#a64b4b;color:#e69b9b}
+footer{color:var(--muted);font-size:11px;text-align:center;padding:20px 10px}
+@media(max-width:420px){.grid{grid-template-columns:1fr}.daylist{grid-template-columns:repeat(5,1fr)}}
+</style>
+</head>
+<body data-theme="black">
+<header><h1>ДЕЙСТВУЙ!</h1><div class="sub">Личный планер · 30 дней</div></header>
+<main>
+  <div class="themes" aria-label="Оформление">
+    <button class="theme-btn active" data-theme-choice="black">⚫ Чёрный</button>
+    <button class="theme-btn" data-theme-choice="gray">🌑 Серый</button>
+    <button class="theme-btn" data-theme-choice="sepia">🟤 Сепия</button>
+  </div>
+  <nav id="nav">
+    <button class="active" data-page="home">Начало</button>
+    <button data-page="goals">Мои цели</button>
+    <button data-page="days">30 дней</button>
+    <button data-page="finance">Финансы</button>
+    <button data-page="review">Итоги</button>
+  </nav>
+  <section id="home" class="page">
+    <div class="card"><h2>Твой месяц начинается сегодня</h2>
+      <p>Каждое утро — 10–15 минут на план. Каждый вечер — короткий разбор. Маленькие действия каждый день создают большой результат.</p>
+      <div class="row"><button class="primary" onclick="showPage('days')">Перейти к плану дня</button><button onclick="showPage('goals')">Записать цели</button></div>
+    </div>
+    <div class="card"><h2>Мой финансовый остаток</h2><div class="money" id="homeBalance">0</div><div class="small">Текущий расчёт по записям в разделе «Финансы»</div></div>
+  </section>
+  <section id="goals" class="page hidden">
+    <div class="card"><h2>Мои 10 целей</h2><p class="small">Заполни один раз. Возвращайся к ним каждый день.</p><div id="goalFields"></div><button class="primary" onclick="saveGoals()">Сохранить цели</button></div>
+  </section>
+  <section id="days" class="page hidden">
+    <div class="card"><h2>План на 30 дней</h2><div class="daylist" id="dayButtons"></div></div>
+    <div class="card"><h2 id="dayTitle">День 1</h2>
+      <label>Дата</label><input type="date" id="d_date">
+      <label>Почему мои цели важны?</label><textarea id="d_why"></textarea>
+      <label>Три главные задачи на сегодня</label><textarea id="d_tasks" placeholder="1.&#10;2.&#10;3."></textarea>
+      <label>Один шаг к главной цели</label><textarea id="d_step"></textarea>
+      <label>Что может помешать и как я справлюсь?</label><textarea id="d_obstacle"></textarea>
+      <h3>Вечерний разбор</h3>
+      <label>Что сегодня получилось?</label><textarea id="d_done"></textarea>
+      <label>Что улучшу завтра?</label><textarea id="d_better"></textarea>
+      <label>За что я благодарен сегодня?</label><textarea id="d_thanks"></textarea>
+      <button class="primary" onclick="saveDay()">Сохранить день</button>
+    </div>
+  </section>
+  <section id="finance" class="page hidden">
+    <div class="card"><h2>Финансы</h2>
+      <label>Начальный остаток</label><input type="number" id="opening" inputmode="decimal" placeholder="0">
+      <button onclick="saveOpening()">Сохранить начальный остаток</button>
+      <div class="grid"><div><label>Тип записи</label><select id="kind"><option value="in">Поступление</option><option value="save">Накопление</option><option value="out">Трата</option><option value="other">Другое</option></select></div><div><label>Сумма</label><input type="number" id="amount" inputmode="decimal" min="0" placeholder="0"></div></div>
+      <label>Комментарий</label><input id="note" placeholder="Например: зарплата, продукты">
+      <button class="primary" onclick="addFinance()">Добавить запись</button>
+    </div>
+    <div class="card"><h2>Сводка</h2><div class="small">Текущий остаток</div><div class="money" id="balance">0</div><div class="small" id="savedTotal">Накоплено: 0</div></div>
+    <div class="card"><h2>История</h2><div id="history" class="small">Пока записей нет.</div></div>
+  </section>
+  <section id="review" class="page hidden">
+    <div class="card"><h2>Недельный и месячный обзор</h2>
+      <label>Главные достижения</label><textarea id="r_wins"></textarea>
+      <label>Что не получилось и почему?</label><textarea id="r_lessons"></textarea>
+      <label>Что изменю на следующей неделе?</label><textarea id="r_next"></textarea>
+      <label>Оценка месяца от 1 до 10</label><input id="r_score" type="number" min="1" max="10" inputmode="numeric">
+      <button class="primary" onclick="saveReview()">Сохранить итоги</button>
+    </div>
+    <div class="card"><h2>Резервная копия</h2><p class="small">Сохрани копию, чтобы не потерять записи при очистке данных браузера.</p><div class="row"><button onclick="exportData()">Экспорт</button><button onclick="document.getElementById('importFile').click()">Импорт</button></div><input class="hidden" type="file" id="importFile" accept="application/json" onchange="importData(event)"><p><button class="danger" onclick="clearAll()">Очистить всё</button></p></div>
+  </section>
+</main>
+<footer>Записи хранятся на этом устройстве в браузере. Для переноса на другое устройство используй экспорт и импорт.</footer>
+<script>
+const KEY='deystvuy_mobile_v1';
+let data={theme:'black',goals:Array(10).fill(''),days:{},opening:0,finance:[],review:{}};
+try{data={...data,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){}
+function persist(){localStorage.setItem(KEY,JSON.stringify(data));updateMoney()}
+function setTheme(t){data.theme=t;document.body.dataset.theme=t;document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===t));persist()}
+document.querySelectorAll('[data-theme-choice]').forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.themeChoice)));
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==id));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+function buildGoals(){goalFields.innerHTML='';data.goals.forEach((v,i)=>{let l=document.createElement('label');l.textContent='Цель '+(i+1);let inp=document.createElement('input');inp.value=v;inp.placeholder='Моя цель...';inp.dataset.i=i;goalFields.append(l,inp)})}
+function saveGoals(){document.querySelectorAll('#goalFields input').forEach(x=>data.goals[+x.dataset.i]=x.value);persist();alert('Цели сохранены')}
+let day=1;const ids=['date','why','tasks','step','obstacle','done','better','thanks'];
+function loadDay(n){day=n;dayTitle.textContent='День '+n;let d=data.days[n]||{};ids.forEach(k=>document.getElementById('d_'+k).value=d[k]||'');}
+function saveDay(){let d={};ids.forEach(k=>d[k]=document.getElementById('d_'+k).value);data.days[day]=d;persist();alert('День сохранён')}
+function buildDays(){dayButtons.innerHTML='';for(let i=1;i<=30;i++){let b=document.createElement('button');b.textContent=i;b.onclick=()=>loadDay(i);if(data.days[i])b.style.borderColor='var(--accent)';dayButtons.append(b)}}
+function saveOpening(){data.opening=Number(opening.value)||0;persist();alert('Начальный остаток сохранён')}
+function addFinance(){let a=Number(amount.value);if(!(a>0)){alert('Введи сумму больше нуля');return}data.finance.unshift({kind:kind.value,amount:a,note:note.value,date:new Date().toLocaleDateString('ru-RU')});amount.value='';note.value='';persist();renderHistory()}
+function calc(){let balance=Number(data.opening)||0,saved=0;data.finance.forEach(x=>{if(x.kind==='in')balance+=x.amount;else if(x.kind==='out'||x.kind==='other')balance-=x.amount;if(x.kind==='save')saved+=x.amount});return {balance,saved}}
+function updateMoney(){let x=calc();['balance','homeBalance'].forEach(id=>{let el=document.getElementById(id);if(el)el.textContent=x.balance.toLocaleString('ru-RU')});let st=document.getElementById('savedTotal');if(st)st.textContent='Накоплено: '+x.saved.toLocaleString('ru-RU')}
+function renderHistory(){history.innerHTML='';if(!data.finance.length){history.textContent='Пока записей нет.';return}data.finance.forEach(x=>{let d=document.createElement('div');d.className='entry';let label={in:'Поступление',save:'Накопление',out:'Трата',other:'Другое'}[x.kind];d.textContent=x.date+' · '+label+' · '+x.amount.toLocaleString('ru-RU')+(x.note?' · '+x.note:'');history.append(d)})}
+function saveReview(){data.review={wins:r_wins.value,lessons:r_lessons.value,next:r_next.value,score:r_score.value};persist();alert('Итоги сохранены')}
+function exportData(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='deystvuy-backup.json';a.click();URL.revokeObjectURL(a.href)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{data={...data,...JSON.parse(r.result)};persist();location.reload()}catch(err){alert('Не удалось прочитать файл копии')}};r.readAsText(f)}
+function clearAll(){if(confirm('Удалить все цели, записи за 30 дней и финансы?'))if(confirm('Это действие нельзя отменить. Резервную копию уже сохранил?')){localStorage.removeItem(KEY);location.reload()}}
+document.body.dataset.theme=data.theme;document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===data.theme));
+buildGoals();buildDays();loadDay(1);opening.value=data.opening||0;
+r_wins.value=data.review.wins||'';r_lessons.value=data.review.lessons||'';r_next.value=data.review.next||'';r_score.value=data.review.score||'';
+updateMoney();renderHistory();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+</script>
+</body></html>
